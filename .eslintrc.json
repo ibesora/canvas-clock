@@ -1,5 +1,8 @@
 {
-  "extends": "airbnb-base",
+  "extends": [
+    "airbnb-base",
+    "eslint:recommended"
+  ],
   "env": {
     "browser": true,
     "es6": true,
@@ -8,5 +11,64 @@
   "parserOptions": {
     "ecmaVersion": 10,
     "sourceType": "script"
+  },
+  "rules": {
+    "no-unused-vars": ["warn", {
+      "vars": "all",
+      "args": "after-used",
+      "argsIgnorePattern": "^_",
+      "varsIgnorePattern": "^_"
+    }],
+    "block-spacing": ["error", "always"],
+    "brace-style": ["error", "1tbs", {
+      "allowSingleLine": true
+    }],
+    "comma-dangle": ["error", {
+      "arrays": "never",
+      "objects": "never",
+      "imports": "never",
+      "exports": "never",
+      "functions": "never"
+    }],
+    "comma-spacing": ["error", {
+      "before": false,
+      "after": true
+    }],
+    "comma-style": ["error", "last"],
+    "eqeqeq": ["error", "always"],
+    "func-call-spacing": ["error", "never"],
+    "indent": ["error", 2],
+    "key-spacing": ["error", {
+      "beforeColon": false,
+      "afterColon": true
+    }],
+    "keyword-spacing": ["error", {
+      "before": true,
+      "after": true
+    }],
+    "new-cap": ["error", {
+      "newIsCap": true,
+      "capIsNew": false,
+      "properties": true
+    }],
+    "new-parens": "error",
+    "no-mixed-spaces-and-tabs": "error",
+    "no-multi-spaces": "error",
+    "no-tabs": "error",
+    "no-trailing-spaces": "error",
+    "object-curly-newline": ["error", {
+      "multiline": true,
+      "consistent": true
+    }],
+    "object-curly-spacing": ["error", "always"],
+    "object-property-newline": ["error", {
+      "allowMultiplePropertiesPerLine": true
+    }],
+    "space-infix-ops": "error",
+    "yoda": ["error", "never", {
+      "onlyEquality": true
+    }],
+    "no-plusplus": "off",
+    "semi": [2, "never"]
   }
 }
