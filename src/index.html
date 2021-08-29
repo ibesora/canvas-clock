@@ -1,24 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
   <title>A simple canvas-based analog clock</title>
-  <link rel="stylesheet" href="./style.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel='stylesheet' href='./style.css'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
 </head>
 <body>
   <div class='content'>
     <div class='wristwatch'></div>
+    <div class='logo'>
+      <img src='../assets/felt-logo.svg' class='logo' alt='Felt logo'>
+    </div>
     <div class='mode-icon'>
-      <img src="../assets/walk.svg" id="regular-mode-icon" class="icon active" alt="Regular mode">
-      <img src="../assets/run.svg" id="stopwatch-mode-icon" class="icon" alt="Stopwatch mode">
+      <img src='../assets/walk.svg' id='regular-mode-icon' class='icon active' alt='Regular mode'>
+      <img src='../assets/run.svg' id='stopwatch-mode-icon' class='icon' alt='Stopwatch mode'>
     </div>
     <div class='attribution'>Icons created by Gleb Khorunzhiy from the Noun Project</div>
     <div class='buttons'>
-      <div id="top-button" class="button"></div>
-      <div id="middle-button" class="button"></div>
-      <div id="bottom-button" class="button"></div>
+      <div id='top-button' class='button' title='Click here to start/pause the stopwatch while in stopwatch mode'></div>
+      <div id='middle-button' class='button' title='Click here to change the wristwatch mode between regular and stopwatch modes'></div>
+      <div id='bottom-button' class='button' title='Click here to reset the stopwatch while in stopwatch mode'></div>
     </div>
   </div>
-  <script src="./main.js"></script>
+  <script src='./main.js'></script>
 </body>
 </html>

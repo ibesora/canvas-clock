@@ -39,12 +39,17 @@ body {
   justify-content: center;
 }
 
+.logo {
+  position: relative;
+  bottom: 190px;
+}
+
 .mode-icon {
   flex-direction: row;
   display: flex;
   justify-content: center;
   position: relative;
-  top: -240px;
+  bottom: 275px;
 }
 
 .icon {
@@ -64,20 +69,20 @@ body {
 
 #top-button {
   position: relative;
-  bottom: 481px;
+  bottom: 521px;
   left: 154px;
 }
 
 #middle-button {
   position: relative;
-  bottom: 439px;
+  bottom: 479px;
   left: 187px;
   height: 50px;
 }
 
 #bottom-button {
   position: relative;
-  bottom: 399px;
+  bottom: 439px;
   left: 154px;
 }
 
