@@ -46,6 +46,9 @@ class ClockRenderer {
     this.backgroundCtx = backgroundCanvas.getContext('2d')
     this.regularModeIcon = document.getElementById('regular-mode-icon')
     this.stopWatchModeIcon = document.getElementById('stopwatch-mode-icon')
+    this.topButton = document.getElementById('top-button')
+    this.middleButton = document.getElementById('middle-button')
+    this.bottomButton = document.getElementById('bottom-button')
     this.canvasHalfWidth = canvas.width / 2
     this.canvasHalfHeight = canvas.height / 2
     this.circleRadians = Math.PI * 2
@@ -55,7 +58,64 @@ class ClockRenderer {
     this.isStopWatchRunning = false
     this.stopWatchIntervalId = null
 
+    this.addEventListeners()
     this.renderBackgroundToOffscreenCanvas()
+  }
+
+  addEventListeners() {
+    this.topButton.addEventListener('click', () => {
+      if (this.clockMode === ClockMode.StopWatch && this.isStopWatchRunning) this.pauseStopWatch()
+      else if (this.clockMode === ClockMode.StopWatch && !this.isStopWatchRunning) this.startStopWatch()
+    })
+    this.middleButton.addEventListener('click', () => {
+      if (this.clockMode === ClockMode.Regular) this.switchModeToStopWatch()
+      else if (this.clockMode === ClockMode.StopWatch) this.switchModeToRegular()
+    })
+    this.bottomButton.addEventListener('click', () => {
+      if (this.clockMode === ClockMode.StopWatch) {
+        this.resetStopWatch()
+      }
+    })
+  }
+
+  pauseStopWatch () {
+    this.isStopWatchRunning = false
+    clearInterval(this.stopWatchIntervalId)
+  }
+
+  startStopWatch () {
+    this.isStopWatchRunning = true
+    this.stopWatchIntervalId = setInterval(() => this.increaseMillis(), this.stopWatchIntervalMillis)
+  }
+
+  increaseMillis () {
+    this.stopWatchMillis += this.stopWatchIntervalMillis
+  }
+
+  resetStopWatch () {
+    this.pauseStopWatch()
+    this.stopWatchMillis = 0
+  }
+
+  switchModeToStopWatch () {
+    this.clockMode = ClockMode.StopWatch
+    this.switchModeIcons()
+  }
+
+  switchModeIcons () {
+    const elementToEnable = this.clockMode === ClockMode.StopWatch
+      ? this.stopWatchModeIcon
+      : this.regularModeIcon 
+    const elementToDisable = this.clockMode === ClockMode.StopWatch
+      ? this.regularModeIcon
+      : this.stopWatchModeIcon
+    elementToEnable.classList.add("active")
+    elementToDisable.classList.remove("active")
+  }
+
+  switchModeToRegular () {
+    this.clockMode = ClockMode.Regular
+    this.switchModeIcons()
   }
 
   renderBackgroundToOffscreenCanvas() {
@@ -237,46 +297,6 @@ class ClockRenderer {
     return { hoursHandValue: minutesHandValue / minutesToHoursAngleMapping, minutesHandValue: secondsValue, secondsHandValue}
   }
 
-  pauseStopWatch () {
-    this.isStopWatchRunning = false
-    clearInterval(this.stopWatchIntervalId)
-  }
-
-  startStopWatch () {
-    this.isStopWatchRunning = true
-    this.stopWatchIntervalId = setInterval(() => this.increaseMillis(), this.stopWatchIntervalMillis)
-  }
-
-  increaseMillis () {
-    this.stopWatchMillis += this.stopWatchIntervalMillis
-  }
-
-  resetStopWatch () {
-    this.pauseStopWatch()
-    this.stopWatchMillis = 0
-  }
-
-  switchModeToStopWatch () {
-    this.clockMode = ClockMode.StopWatch
-    this.switchModeIcons()
-  }
-
-  switchModeIcons () {
-    const elementToEnable = this.clockMode === ClockMode.StopWatch
-      ? this.stopWatchModeIcon
-      : this.regularModeIcon 
-    const elementToDisable = this.clockMode === ClockMode.StopWatch
-      ? this.regularModeIcon
-      : this.stopWatchModeIcon
-    elementToEnable.classList.add("active")
-    elementToDisable.classList.remove("active")
-  }
-
-  switchModeToRegular () {
-    this.clockMode = ClockMode.Regular
-    this.switchModeIcons()
-  }
-
 }
 
 const main = () => {
@@ -285,15 +305,6 @@ const main = () => {
   const backgroundCanvas = create2dCanvas()
   appendCanvasToDOM(canvas)
   const clockRenderer = new ClockRenderer(canvas, backgroundCanvas)
-  document.body.addEventListener('keyup', (e) => {
-    if (e.key === ' ') {
-      if (clockRenderer.clockMode === ClockMode.StopWatch && clockRenderer.isStopWatchRunning) clockRenderer.pauseStopWatch()
-      else if (clockRenderer.clockMode === ClockMode.StopWatch && !clockRenderer.isStopWatchRunning) clockRenderer.startStopWatch()
-    } else if (clockRenderer.clockMode === ClockMode.StopWatch && e.key === 'Enter') {
-      clockRenderer.resetStopWatch()
-    } else if (e.key === 'ArrowRight' && clockRenderer.clockMode === ClockMode.Regular) clockRenderer.switchModeToStopWatch()
-    else if (e.key === 'ArrowLeft' && clockRenderer.clockMode === ClockMode.StopWatch) clockRenderer.switchModeToRegular()
-  })
   clockRenderer.draw()
 }
 
