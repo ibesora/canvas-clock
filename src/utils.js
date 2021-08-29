@@ -11,6 +11,10 @@ export const appendCanvasToDOM = (canvas) => {
 
 export const getCurrentTimeInMillis = () => {
   const date = new Date()
+  return getTimeInMillis(date)
+}
+
+export const getTimeInMillis = (date) => {
   const millisInASecond = 1000
   const secondsInAMinute = 60
   const minutesInAnHour = 60
