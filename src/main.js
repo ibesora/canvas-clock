@@ -249,6 +249,11 @@ class ClockRenderer {
     this.stopWatchMillis += this.stopWatchIntervalMillis
   }
 
+  resetStopWatch () {
+    this.pauseStopWatch()
+    this.stopWatchMillis = 0
+  }
+
 }
 
 const main = () => {
@@ -260,6 +265,8 @@ const main = () => {
     if (e.key === ' ') {
       if (clockRenderer.clockMode === ClockMode.StopWatch && clockRenderer.isStopWatchRunning) clockRenderer.pauseStopWatch()
       else if (clockRenderer.clockMode === ClockMode.StopWatch && !clockRenderer.isStopWatchRunning) clockRenderer.startStopWatch()
+    } else if (clockRenderer.clockMode === ClockMode.StopWatch && e.key === 'Enter') {
+      clockRenderer.resetStopWatch()
     }
   })
   clockRenderer.draw()
