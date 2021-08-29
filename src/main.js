@@ -1,26 +1,27 @@
 // Configuration options
-const canvasMargin = 10
-const outerCircleStrokeColor = '#92949C'
-const centerCircleRadius = 2
-const centerCircleLineWidth = 3
-const centerCircleStrokeColor = '#0C3D4A'
-const centerCircleFillColor = '#353535'
-const hourMarkLength = 10
-const hourMarkWidth = 2
-const hourMarkColor = '#466B76'
-const hoursHandleToWatchRadiusRatio = 0.7
-const hoursHandleWidth = 2
-const hoursHandleColor = '#000000'
-const minutesMarkLength = 5
-const minutesMarkWidth = 1
-const minutesMarkColor = '#C4D1D5'
-const minutesHandleWidth = 0.8
-const minutesHandleToWatchRadiusRatio = 0.8
-const minutesHandleColor = '#000000'
-const secondsHandleWidth = 0.5
-const secondsHandleToWatchRadiusRatio = 0.9
-const secondsHandleColor = '#ff0000'
-const secondsTailToWatchRadiusRatio = 0.1
+const CanvasMargin = 10
+const OuterCircleStrokeColor = '#92949C'
+const CenterCircleRadius = 2
+const CenterCircleLineWidth = 3
+const CenterCircleStrokeColor = '#0C3D4A'
+const CenterCircleFillColor = '#353535'
+const HourMarkLength = 10
+const HourMarkWidth = 2
+const HourMarkColor = '#466B76'
+const HoursHandleToWatchRadiusRatio = 0.7
+const HoursHandleWidth = 2
+const HoursHandleColor = '#000000'
+const MinutesMarkLength = 5
+const MinutesMarkWidth = 1
+const MinutesMarkColor = '#C4D1D5'
+const MinutesHandleWidth = 0.8
+const MinutesHandleToWatchRadiusRatio = 0.8
+const MinutesHandleColor = '#000000'
+const SecondsHandleWidth = 0.5
+const SecondsHandleToWatchRadiusRatio = 0.9
+const SecondsHandleColor = '#ff0000'
+const SecondsTailToWatchRadiusRatio = 0.1
+const CangeModeAnimationDurationMillis = 500
 
 const create2dCanvas = (width = 300, height = 300) => {
   const canvas = document.createElement('canvas')
@@ -33,9 +34,17 @@ const appendCanvasToDOM = (canvas) => {
   document.body.appendChild(canvas)
 }
 
+const easeInOutCubic = (x) => {
+  // This code is from https://easings.net/#easeInOutCubic
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
+
 const ClockMode = {
   Regular: 0,
-  StopWatch: 1
+  StopWatch: 1,
+  StopWatchToRegular: 2,
+  RegularToStopWatch: 3,
+  ResettingStopWatch: 4
 }
 
 class ClockRenderer {
@@ -57,6 +66,7 @@ class ClockRenderer {
     this.stopWatchIntervalMillis = 10
     this.isStopWatchRunning = false
     this.stopWatchIntervalId = null
+    this.changeModeAnimationStart = 0
 
     this.addEventListeners()
     this.renderBackgroundToOffscreenCanvas()
@@ -70,6 +80,7 @@ class ClockRenderer {
     this.middleButton.addEventListener('click', () => {
       if (this.clockMode === ClockMode.Regular) this.switchModeToStopWatch()
       else if (this.clockMode === ClockMode.StopWatch) this.switchModeToRegular()
+      this.switchModeIcons()
     })
     this.bottomButton.addEventListener('click', () => {
       if (this.clockMode === ClockMode.StopWatch) {
@@ -94,19 +105,20 @@ class ClockRenderer {
 
   resetStopWatch () {
     this.pauseStopWatch()
-    this.stopWatchMillis = 0
+    this.changeModeAnimationStart = 0
+    this.clockMode = ClockMode.ResettingStopWatch
   }
 
   switchModeToStopWatch () {
-    this.clockMode = ClockMode.StopWatch
-    this.switchModeIcons()
+    this.clockMode = ClockMode.RegularToStopWatch
+    this.changeModeAnimationStart = 0
   }
 
   switchModeIcons () {
-    const elementToEnable = this.clockMode === ClockMode.StopWatch
+    const elementToEnable = this.clockMode === ClockMode.RegularToStopWatch
       ? this.stopWatchModeIcon
       : this.regularModeIcon 
-    const elementToDisable = this.clockMode === ClockMode.StopWatch
+    const elementToDisable = this.clockMode === ClockMode.RegularToStopWatch
       ? this.regularModeIcon
       : this.stopWatchModeIcon
     elementToEnable.classList.add("active")
@@ -114,8 +126,8 @@ class ClockRenderer {
   }
 
   switchModeToRegular () {
-    this.clockMode = ClockMode.Regular
-    this.switchModeIcons()
+    this.clockMode = ClockMode.StopWatchToRegular
+    this.changeModeAnimationStart = 0
   }
 
   renderBackgroundToOffscreenCanvas() {
@@ -131,14 +143,14 @@ class ClockRenderer {
   renderCircles(ctx) {
     ctx.clearRect(0, 0, this.backgroundCanvas.width, this.backgroundCanvas.height)
     ctx.arc(this.canvasHalfWidth, this.canvasHalfHeight, Math.min(this.canvasHalfWidth,
-      this.canvasHalfHeight) - canvasMargin, 0, this.circleRadians)
-    ctx.strokeStyle = outerCircleStrokeColor
+      this.canvasHalfHeight) - CanvasMargin, 0, this.circleRadians)
+    ctx.strokeStyle = OuterCircleStrokeColor
     ctx.stroke()
     ctx.beginPath()
-    ctx.arc(this.canvasHalfWidth, this.canvasHalfHeight, centerCircleRadius, 0, this.circleRadians)
-    ctx.lineWidth = centerCircleLineWidth
-    ctx.fillStyle = centerCircleFillColor
-    ctx.strokeStyle = centerCircleStrokeColor
+    ctx.arc(this.canvasHalfWidth, this.canvasHalfHeight, CenterCircleRadius, 0, this.circleRadians)
+    ctx.lineWidth = CenterCircleLineWidth
+    ctx.fillStyle = CenterCircleFillColor
+    ctx.strokeStyle = CenterCircleStrokeColor
     ctx.stroke()
   }
 
@@ -147,15 +159,15 @@ class ClockRenderer {
   }
 
   renderMarks(ctx) {
-    const outerRadius = Math.min(this.canvasHalfWidth, this.canvasHalfHeight) - canvasMargin
+    const outerRadius = Math.min(this.canvasHalfWidth, this.canvasHalfHeight) - CanvasMargin
     for (let i = 0; i < 60; ++i) {
       if (i % 5 === 0) {
         const angle = this.computeCircleAngle(i, 12)
-        this.renderMark(ctx, angle, outerRadius, hourMarkLength, hourMarkWidth, hourMarkColor)
+        this.renderMark(ctx, angle, outerRadius, HourMarkLength, HourMarkWidth, HourMarkColor)
       } else {
         const angle = this.computeCircleAngle(i, 60)
-        this.renderMark(ctx, angle, outerRadius, minutesMarkLength, minutesMarkWidth,
-          minutesMarkColor)
+        this.renderMark(ctx, angle, outerRadius, MinutesMarkLength, MinutesMarkWidth,
+          MinutesMarkColor)
       }
     }
   }
@@ -208,6 +220,8 @@ class ClockRenderer {
       this.renderRegularModeHandles()
     }
     else if (this.clockMode === ClockMode.StopWatch) this.renderStopWatchModeHandles(this.stopWatchMillis)
+    else if (this.clockMode === ClockMode.RegularToStopWatch || this.clockMode === ClockMode.StopWatchToRegular) this.renderModeChangeAnimation(step)
+    else if (this.clockMode === ClockMode.ResettingStopWatch) this.renderResetStopWatch(step)
   }
 
   renderRegularModeHandles() {
@@ -254,12 +268,12 @@ class ClockRenderer {
     const secondsAngle = this.computeCircleAngle(seconds, 60, quarterCircleAngle)
     const minutesAngle = this.computeCircleAngle(minutes, 60, quarterCircleAngle)
     const hoursAngle = this.computeCircleAngle(hours, 12, quarterCircleAngle)
-    this.renderHandle(secondsAngle, clockRadius * secondsHandleToWatchRadiusRatio,
-      secondsHandleWidth, secondsHandleColor, clockRadius * secondsTailToWatchRadiusRatio)
-    this.renderHandle(minutesAngle, clockRadius * minutesHandleToWatchRadiusRatio,
-      minutesHandleWidth, minutesHandleColor)
-    this.renderHandle(hoursAngle, clockRadius * hoursHandleToWatchRadiusRatio,
-      hoursHandleWidth, hoursHandleColor)
+    this.renderHandle(secondsAngle, clockRadius * SecondsHandleToWatchRadiusRatio,
+      SecondsHandleWidth, SecondsHandleColor, clockRadius * SecondsTailToWatchRadiusRatio)
+    this.renderHandle(minutesAngle, clockRadius * MinutesHandleToWatchRadiusRatio,
+      MinutesHandleWidth, MinutesHandleColor)
+    this.renderHandle(hoursAngle, clockRadius * HoursHandleToWatchRadiusRatio,
+      HoursHandleWidth, HoursHandleColor)
   }
 
   renderHandle(angle, handleLength, handleWidth, handleColor, tailLength = 0) {
@@ -282,6 +296,52 @@ class ClockRenderer {
     this.renderHandles(hoursHandValue, minutesHandValue, secondsHandValue)
   }
 
+  renderModeChangeAnimation (step) {
+    if (this.changeModeAnimationStart === 0) this.changeModeAnimationStart = step
+    else {
+      const { handsStartValues, handsEndValues } = this.getAnimValues()
+      const shouldEndAnimation = this.renderAnimationModeHandles(step, handsStartValues, handsEndValues)
+      if (shouldEndAnimation) {
+        if(this.clockMode === ClockMode.RegularToStopWatch) this.clockMode = ClockMode.StopWatch
+        else if (this.clockMode === ClockMode.StopWatchToRegular) this.clockMode = ClockMode.Regular
+      }
+    }
+  }
+
+  getAnimValues () {
+    const nowInMillis = this.getCurrentTimeInMillis()
+    const { hoursHandValue: rH, minutesHandValue: rM, secondsHandValue: rS } = this.getRegularModeHandsValuesFromMillis(nowInMillis)
+    const { hoursHandValue: sH, minutesHandValue: sM, secondsHandValue: sS } = this.getStopWatchModeHandsValuesFromMillis(this.stopWatchMillis)
+    let sourceSecondsHandValue, targetSecondsHandValue
+    let sourceMinutesHandValue, targetMinutesHandValue
+    let sourceHoursHandValue, targetHoursHandValue
+    if (this.clockMode === ClockMode.RegularToStopWatch) {
+      sourceSecondsHandValue = rS; sourceMinutesHandValue = rM; sourceHoursHandValue = rH
+      targetSecondsHandValue = sS; targetMinutesHandValue = sM; targetHoursHandValue = sH
+    } else {
+      sourceSecondsHandValue = sS; sourceMinutesHandValue = sM; sourceHoursHandValue = sH
+      targetSecondsHandValue = rS; targetMinutesHandValue = rM; targetHoursHandValue = rH
+    }
+    // If the target value is less than the source one, we add the needed amount
+    // We don't want our clock hands going backward!
+    targetSecondsHandValue = targetSecondsHandValue < sourceSecondsHandValue ? targetSecondsHandValue + 60 : targetSecondsHandValue
+    targetMinutesHandValue = targetMinutesHandValue < sourceMinutesHandValue ? targetMinutesHandValue + 60 : targetMinutesHandValue
+    targetHoursHandValue = targetHoursHandValue % 12
+    targetHoursHandValue = targetHoursHandValue < sourceHoursHandValue ? sourceHoursHandValue < 12 ? targetHoursHandValue + 12 : targetHoursHandValue + 24 : targetHoursHandValue
+    return {
+      handsStartValues: {
+        hours: sourceHoursHandValue,
+        minutes: sourceMinutesHandValue,
+        seconds: sourceSecondsHandValue
+      },
+      handsEndValues: {
+        hours: targetHoursHandValue,
+        minutes: targetMinutesHandValue,
+        seconds: targetSecondsHandValue
+      }
+    }
+  }
+
   getStopWatchModeHandsValuesFromMillis (millis) {
     // In stopwatch mode the hour, minute and second hands
     // are the minute, seconds and deciseconds values
@@ -295,6 +355,38 @@ class ClockRenderer {
     const secondsHandValue = ((millis / millisecondsInADecisecond) * decisecondsToSecondsAngleMapping) % 60
     const { minutesHandValue, secondsHandValue: secondsValue } = this.getRegularModeHandsValuesFromMillis(millis)
     return { hoursHandValue: minutesHandValue / minutesToHoursAngleMapping, minutesHandValue: secondsValue, secondsHandValue}
+  }
+
+  renderAnimationModeHandles(step, handsStartValues, handsEndValues) {
+    const animDuration = step - this.changeModeAnimationStart
+    const animProgress = animDuration / CangeModeAnimationDurationMillis
+    if (animProgress >= 1) return true
+    else {
+      const mappedProgress = easeInOutCubic(animProgress)
+      const hoursHandValue = this.interpolateValue(mappedProgress, handsStartValues.hours, handsEndValues.hours)      
+      const minutesHandValue = this.interpolateValue(mappedProgress, handsStartValues.minutes, handsEndValues.minutes)      
+      const secondsHandValue = this.interpolateValue(mappedProgress, handsStartValues.seconds, handsEndValues.seconds)
+      this.renderHandles(hoursHandValue, minutesHandValue, secondsHandValue)
+    }
+    return false
+  }
+
+  interpolateValue(progress, startValue, endValue) {
+    return startValue + (endValue - startValue) * progress
+  }
+
+  renderResetStopWatch (step) {
+    if (this.changeModeAnimationStart === 0) this.changeModeAnimationStart = step
+    else {
+      const { hoursHandValue: sH, minutesHandValue: sM, secondsHandValue: sS } = this.getStopWatchModeHandsValuesFromMillis(this.stopWatchMillis)
+      const handsStartValues = { hours: sH % 60, minutes: sM % 60, seconds: sS % 60 }
+      const handsEndValues = this.stopWatchMillis === 0 ? { hours: 0, minutes: 0, seconds: 0} : { hours: 12, minutes: 60, seconds: 60 }
+      const shouldEndAnimation = this.renderAnimationModeHandles(step, handsStartValues, handsEndValues)
+      if (shouldEndAnimation) {
+        this.clockMode = ClockMode.StopWatch
+        this.stopWatchMillis = 0
+      }
+    }
   }
 
 }
