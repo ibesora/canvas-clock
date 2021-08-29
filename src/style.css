@@ -54,11 +54,11 @@ body {
 
 .icon {
   width: 40px;
-  opacity: 10%;
+  opacity: 0.1;
 }
 
-.active {
-  opacity: 100%;
+.icon.active {
+  opacity: 1.0 !important;
 }
 
 .button {
