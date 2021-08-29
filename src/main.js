@@ -47,7 +47,11 @@ class ClockRenderer {
     this.canvasHalfWidth = canvas.width / 2
     this.canvasHalfHeight = canvas.height / 2
     this.circleRadians = Math.PI * 2
-    this.clockMode = ClockMode.Regular
+    this.clockMode = ClockMode.StopWatch
+    this.stopWatchMillis = 0
+    this.stopWatchIntervalMillis = 10
+    this.isStopWatchRunning = false
+    this.stopWatchIntervalId = null
 
     this.renderBackgroundToOffscreenCanvas()
   }
@@ -141,6 +145,7 @@ class ClockRenderer {
     if (this.clockMode === ClockMode.Regular) {
       this.renderRegularModeHandles()
     }
+    else if (this.clockMode === ClockMode.StopWatch) this.renderStopWatchModeHandles(this.stopWatchMillis)
   }
 
   renderRegularModeHandles() {
@@ -209,6 +214,41 @@ class ClockRenderer {
     this.ctx.strokeStyle = handleColor
     this.ctx.stroke()
   }
+
+  renderStopWatchModeHandles (millis) { 
+    const { hoursHandValue, minutesHandValue, secondsHandValue } = this.getStopWatchModeHandsValuesFromMillis(millis)
+    this.renderHandles(hoursHandValue, minutesHandValue, secondsHandValue)
+  }
+
+  getStopWatchModeHandsValuesFromMillis (millis) {
+    // In stopwatch mode the hour, minute and second hands
+    // are the minute, seconds and deciseconds values
+    // This means we need to account for differences between
+    // angles i.e. a whole lap of the seconds hand should be
+    // 10 deciseconds instead of 60 seconds. Similarly, a whole lap of the hour hand
+    // should be 60 seconds instead of 12 hours
+    const millisecondsInADecisecond = 100
+    const decisecondsToSecondsAngleMapping = 60 / 10
+    const minutesToHoursAngleMapping = 60 / 12
+    const secondsHandValue = ((millis / millisecondsInADecisecond) * decisecondsToSecondsAngleMapping) % 60
+    const { minutesHandValue, secondsHandValue: secondsValue } = this.getRegularModeHandsValuesFromMillis(millis)
+    return { hoursHandValue: minutesHandValue / minutesToHoursAngleMapping, minutesHandValue: secondsValue, secondsHandValue}
+  }
+
+  pauseStopWatch () {
+    this.isStopWatchRunning = false
+    clearInterval(this.stopWatchIntervalId)
+  }
+
+  startStopWatch () {
+    this.isStopWatchRunning = true
+    this.stopWatchIntervalId = setInterval(() => this.increaseMillis(), this.stopWatchIntervalMillis)
+  }
+
+  increaseMillis () {
+    this.stopWatchMillis += this.stopWatchIntervalMillis
+  }
+
 }
 
 const main = () => {
@@ -216,6 +256,12 @@ const main = () => {
   const backgroundCanvas = create2dCanvas()
   appendCanvasToDOM(canvas)
   const clockRenderer = new ClockRenderer(canvas, backgroundCanvas)
+  document.body.addEventListener('keyup', (e) => {
+    if (e.key === ' ') {
+      if (clockRenderer.clockMode === ClockMode.StopWatch && clockRenderer.isStopWatchRunning) clockRenderer.pauseStopWatch()
+      else if (clockRenderer.clockMode === ClockMode.StopWatch && !clockRenderer.isStopWatchRunning) clockRenderer.startStopWatch()
+    }
+  })
   clockRenderer.draw()
 }
 
