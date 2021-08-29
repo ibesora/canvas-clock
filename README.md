@@ -10,3 +10,15 @@ This small project consists of an analog clock, rendered in canvas, with two mod
 The clock has 3 buttons. The top one is used to start/pause the stopwatch while in that mode, the bottom one is used to reset the stopwatch while in that mode and the middle one is used to change between the regular and stopwatch modes
 
 You can see it live [here](https://ibesora.github.io/canvas-clock/)
+
+## Running locally
+1. Clone the repo
+2. Run `npm install`
+3. Run `npm run start`
+4. Open a browser pointing at `http://localhost:8080`
+
+### Building
+After cloning the repo, run `npm run build`. All the needed static files will be built and ready to deploy at the `dist` folder
+
+### Running tests
+Just run `npm run test` to run unit tests
