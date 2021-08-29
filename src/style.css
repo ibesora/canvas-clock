@@ -13,6 +13,53 @@ html, * {
 
 body {
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 0;
+}
+
+.wristwatch {
+  min-width: 600px;
+  max-width: 600px;
+  width: 600px;
+  height: 600px;
+  background-image:url('../assets/wristwatch.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mode-icon {
+  flex-direction: row;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  top: -240px;
+}
+
+.icon {
+  width: 40px;
+  opacity: 10%;
+}
+
+.icon.active {
+  opacity: 100%;
+}
+
+.main-canvas {
+  position: absolute;
+  top: 150px;
+  z-index: 1;
 }
 
 h1 {

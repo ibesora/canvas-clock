@@ -44,10 +44,12 @@ class ClockRenderer {
     this.backgroundCanvas = backgroundCanvas
     this.ctx = canvas.getContext('2d')
     this.backgroundCtx = backgroundCanvas.getContext('2d')
+    this.regularModeIcon = document.getElementById('regular-mode-icon')
+    this.stopWatchModeIcon = document.getElementById('stopwatch-mode-icon')
     this.canvasHalfWidth = canvas.width / 2
     this.canvasHalfHeight = canvas.height / 2
     this.circleRadians = Math.PI * 2
-    this.clockMode = ClockMode.StopWatch
+    this.clockMode = ClockMode.Regular
     this.stopWatchMillis = 0
     this.stopWatchIntervalMillis = 10
     this.isStopWatchRunning = false
@@ -254,10 +256,32 @@ class ClockRenderer {
     this.stopWatchMillis = 0
   }
 
+  switchModeToStopWatch () {
+    this.clockMode = ClockMode.StopWatch
+    this.switchModeIcons()
+  }
+
+  switchModeIcons () {
+    const elementToEnable = this.clockMode === ClockMode.StopWatch
+      ? this.stopWatchModeIcon
+      : this.regularModeIcon 
+    const elementToDisable = this.clockMode === ClockMode.StopWatch
+      ? this.regularModeIcon
+      : this.stopWatchModeIcon
+    elementToEnable.classList.add("active")
+    elementToDisable.classList.remove("active")
+  }
+
+  switchModeToRegular () {
+    this.clockMode = ClockMode.Regular
+    this.switchModeIcons()
+  }
+
 }
 
 const main = () => {
   const canvas = create2dCanvas()
+  canvas.className = 'main-canvas'
   const backgroundCanvas = create2dCanvas()
   appendCanvasToDOM(canvas)
   const clockRenderer = new ClockRenderer(canvas, backgroundCanvas)
@@ -267,7 +291,8 @@ const main = () => {
       else if (clockRenderer.clockMode === ClockMode.StopWatch && !clockRenderer.isStopWatchRunning) clockRenderer.startStopWatch()
     } else if (clockRenderer.clockMode === ClockMode.StopWatch && e.key === 'Enter') {
       clockRenderer.resetStopWatch()
-    }
+    } else if (e.key === 'ArrowRight' && clockRenderer.clockMode === ClockMode.Regular) clockRenderer.switchModeToStopWatch()
+    else if (e.key === 'ArrowLeft' && clockRenderer.clockMode === ClockMode.StopWatch) clockRenderer.switchModeToRegular()
   })
   clockRenderer.draw()
 }
